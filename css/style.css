@@ -69,9 +69,18 @@ html, body {
     margin-right: 20px;
 }
 
+.sidebar .download-resolution {
+    margin-top: 20px;
+
+    margin-bottom: 40px;
+}
+
+.sidebar .download-resolution label {
+    width: 50px;
+    margin-right: 20px;
+}
 .sidebar .scale {
     margin-top: 20px;
-    margin-bottom: 40px;
 }
 
 .sidebar .disable .btn-small {

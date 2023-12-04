@@ -39,8 +39,14 @@
             <div class="scale">
                 <label for="scale">缩放值 (像素大小)：</label>
                 <input type="number" min="0.01" max="1" step="0.01" value="0.25" name="scale" id="scale">
+                <span>缩放后像素(宽x高):</span>
+                <span id="pixels"></span>
             </div>
-
+            <div class="download-resolution" id="download-resolution-panel">
+                <span class="download-resolution">下载尺寸：</span>
+                <input type="radio" name="downloadResolution" id="resolution-origin" class="option" checked="checked" value="0"><label for="resolution-origin">放大</label>
+                <input type="radio" name="downloadResolution" id="resolution-pixel" class="option"  value="1"><label for="resolution-pixel">原始</label>
+            </div>
             <a href="#" id="download" class="btn btn-download">下载图片</a>
         </div>
 

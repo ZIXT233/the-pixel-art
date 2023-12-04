@@ -12,8 +12,10 @@
     var thresholdLevel = $('threshold-level'),
         thresholdVal = document.querySelector('.threshold-val'),
         mode = document.getElementsByName('mode'),
+        downloadResolution = document.getElementsByName('downloadResolution'),
         add = $('add'),
         subtract = $('subtract'),
+        pixels = $('pixels');
         scaleRatio = $('scale'),
         isThresholdOn = $('threshold-on'),
         modePanel = $('mode-panel'),
@@ -33,24 +35,20 @@
     var thresholdConvert = function(ctx, imageData, threshold, mode) {
         var data = imageData.data;
         for (var i = 0; i < data.length; i += 4) {
-            var red = data[i];
-            var green = data[i + 1];
-            var blue = data[i + 2];
-            var alpha = data[i + 3];
 
             // 灰度计算公式
             var gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 *data[i + 2];
-
-            var color = gray >= threshold ? 255 : 0;
-
-            data[i]     = (mode == 0 && color == 0) ? red : color;    // red
-            data[i + 1] = (mode == 0 && color == 0) ? green : color;  // green
-            data[i + 2] = (mode == 0 && color == 0) ? blue : color;   // blue
-            data[i + 3] = alpha >= threshold ? 255 : 0;               // 去掉透明
+            var binary = gray >= threshold ? 255 : 0;
+            if(mode == 1 || binary==255){
+                data[i]=data[i+1]=data[i+2]=binary;
+            }
+            //data[i+3]=255;
+            //data[i + 3] = data[i+3] >= threshold ? 255 : 0;               // 去掉透明
         }
         ctx.putImageData(imageData, 0, 0);
     };
 
+    var canvas,canvasTemp;
     var render = function() {
 
         if (!currentImage) {
@@ -58,7 +56,7 @@
             return;
         }
 
-        var canvasTemp = document.createElement('canvas');
+        canvasTemp = document.createElement('canvas');
         var context = canvasTemp.getContext('2d');
 
         var image = new Image();
@@ -66,30 +64,28 @@
         image.onload = function() {
             canvasTemp.width = image.width * scale;
             canvasTemp.height = image.height * scale;
+            pixels.innerHTML=canvasTemp.width+"x"+canvasTemp.height;
             // 缩小到 25%
             context.drawImage(image, 0, 0, image.width * scale, image.height * scale);
 
             var imageData = context.getImageData(0, 0, image.width * scale, image.height * scale);
             // 阈值处理
-            isThresholdOn.checked && thresholdConvert(context, imageData, currentThreshold, getModeValue(mode));
+            isThresholdOn.checked && thresholdConvert(context, imageData, currentThreshold, getCheckedValue(mode));
 
             var dataURL = canvasTemp.toDataURL();
-            var canvas = $('canvas');
+            canvas = $('canvas');
             var ctx = canvas.getContext('2d');
             var img = new Image();
             img.src = dataURL;
             img.onload = function() {
                 canvas.width = img.width / scale;
                 canvas.height = img.height / scale;
-
                 // 反锯齿
                 ctx.imageSmoothingEnabled = false;
                 ctx.mozImageSmoothingEnabled = false;
                 ctx.webkitImageSmoothingEnabled = false;
                 ctx.msImageSmoothingEnabled = false;
-
                 ctx.drawImage(img, 0, 0, img.width / scale, img.height / scale);
-
                 download();
             };
         };
@@ -116,7 +112,7 @@
         }
     };
 
-    var getModeValue = function(ele) {
+    var getCheckedValue = function(ele) {
         for (var i = 0, len = ele.length; i < len; i++) {
             if (ele[i].checked) {
                 return ele[i].value;
@@ -126,8 +122,9 @@
 
 
     var download = function() {
+        console.log(getCheckedValue(downloadResolution));
         downloadBtn.download = 'pixel.png';
-        downloadBtn.href = canvas.toDataURL();
+        downloadBtn.href = getCheckedValue(downloadResolution)==1 ?canvasTemp.toDataURL():canvas.toDataURL();
     };
 
 
@@ -166,9 +163,9 @@
             render();
         }, false);
     }
+    downloadResolution[0].addEventListener('change', download, false);
 
-
-
+    downloadResolution[1].addEventListener('change', download, false);
 
     // upload
     uploadBtn.addEventListener('change', function(e) {
